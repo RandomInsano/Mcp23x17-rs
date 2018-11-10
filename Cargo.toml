@@ -1,0 +1,10 @@
+[package]
+name = "mcp23x17"
+version = "0.1.0"
+authors = ["Edwin Amsler <edwinguy@gmail.com>"]
+
+[dependencies]
+embedded-hal = "0.2"
+
+[dev-dependencies]
+linux-embedded-hal = "0.2"
