@@ -2,9 +2,18 @@
 name = "mcp23x17"
 version = "0.1.0"
 authors = ["Edwin Amsler <edwinguy@gmail.com>"]
+description = "A Rust embedded-hal driver for a Microchip GPIO Expander of the same name"
+repository = "https://github.com/RandomInsano/Mcp23x17-rs"
+categories = ["embedded", "hardware-support", "no-std"]
+keywords = ["io", "expander", "i2c", "driver", "embedded-hal-driver"]
+license = "MIT"
 
 [dependencies]
 embedded-hal = "0.2"
+bitflags = "1.0"
 
 [dev-dependencies]
+embedded-hal-mock = "0.2"
+
+[target.'cfg(linux)'.dev-dependencies]
 linux-embedded-hal = "0.2"
