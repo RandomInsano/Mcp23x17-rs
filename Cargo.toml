@@ -1,6 +1,6 @@
 [package]
 name = "mcp23x17"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Edwin Amsler <edwinguy@gmail.com>"]
 description = "A Rust embedded-hal driver for a Microchip GPIO Expander of the same name"
 repository = "https://github.com/RandomInsano/Mcp23x17-rs"
