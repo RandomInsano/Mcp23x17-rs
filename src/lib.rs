@@ -47,7 +47,7 @@ use bitflags::bitflags;
 const REG_IODIR: u8 = 0x00;
 /// Input polarity inversion. 1 = invert logic
 const REG_IPOL: u8 = 0x01;
-/// Interript on change. 1 = enabled
+/// interrupt on change. 1 = enabled
 const REG_GPINTEN: u8 = 0x02;
 /// Comparison for interrupts
 const REG_DEFVAL: u8 = 0x03;
@@ -138,10 +138,10 @@ where
     /// Helper function to save my typing when reading
     fn get_thing(&mut self, register: u8) -> Result<u8, E> {
         let reg = self.get_port(register);
-        let data: u8 = 0x00;
+        let mut data = [0u8; 1];
 
-        self.i2c.write_read(ADDRESS, &[reg], &mut [data])?;
-        Ok(data)
+        self.i2c.write_read(ADDRESS, &[reg], &mut data)?;
+        Ok(data[0])
     }
 
     /// This chip optionally splits its registers between two eight bit ports
@@ -178,8 +178,8 @@ where
     }
 
     /// Set the pullups. A value of 1 enables the 100KOhm pullup.
-    pub fn set_pullups(&mut self, data: Config) -> Result<(), E> {
-        Ok(self.set_thing(REG_GPPU, data.bits)?)
+    pub fn set_pullups(&mut self, data: u8) -> Result<(), E> {
+        Ok(self.set_thing(REG_GPPU, data)?)
     }
 
     /// Get the pullups.
@@ -187,22 +187,26 @@ where
         Ok(self.get_thing(REG_GPPU)?)
     }
 
-    /// Read interrupt state. Each pin that caused an interrupt will be
-    /// a bit is set. Not settable
+    /// Read interrupt state. Each pin that caused an interrupt will have
+    /// a bit is set. Not settable.
+    /// 
+    /// The value will be reset after a read from `data_at_interrupt` or
+    /// `data()`.
     pub fn who_interrupted(&mut self) -> Result<u8, E> {
         Ok(self.get_thing(REG_INTF)?)
     }
 
-    /// GPIO value at time of interrupt. It will remain locked to this value
-    /// until either this function or `data()` are called.
+    /// GPIO value at time of interrupt. It will remain latched to this value
+    /// until another interrupt is fired. While it won't reset on read, it does
+    /// reset the interrupt state on the corresponding interrupt output pin
     pub fn data_at_interrupt(&mut self) -> Result<u8, E> {
         Ok(self.get_thing(REG_INTCAP)?)
     }
 
     /// Set a comparison value for the interrupts. The interrupt will
     /// fire if the input value is *different* from what is set here
-    pub fn set_int_compare(&mut self, data: Config) -> Result<(), E> {
-        Ok(self.set_thing(REG_DEFVAL, data.bits)?)
+    pub fn set_int_compare(&mut self, data: u8) -> Result<(), E> {
+        Ok(self.set_thing(REG_DEFVAL, data)?)
     }
 
     /// Read interrupt comparison value. Check `set_int_compare()` for more
@@ -214,8 +218,8 @@ where
     /// Decide how interrupts will fire. If a bit is set, the input data
     /// is compared against what's set by `int_compare()`. If unset, the
     /// interrupt will fire when the pin has changed.
-    pub fn set_int_control(&mut self, data: Config) -> Result<(), E> {
-        Ok(self.set_thing(REG_INTCON, data.bits)?)
+    pub fn set_int_control(&mut self, data: u8) -> Result<(), E> {
+        Ok(self.set_thing(REG_INTCON, data)?)
     }
 
     /// Read how interrupts will fire. More details on `set_int_control()`.
@@ -226,11 +230,11 @@ where
     /// Enable interrupts. If a bit is set, a change on this pin will trigger an
     /// interrupt. You'll also need to call `set_int_compare()` and
     /// `set_int_control()`
-    pub fn set_interrupt(&mut self, data: Config) -> Result<(), E> {
-        Ok(self.set_thing(REG_GPINTEN, data.bits)?)
+    pub fn set_interrupt(&mut self, data: u8) -> Result<(), E> {
+        Ok(self.set_thing(REG_GPINTEN, data)?)
     }
 
-    /// Read the data state from the active port. See `set_interript()` for
+    /// Read the data state from the active port. See `set_interrupt()` for
     /// more details
     pub fn interrupt(&mut self) -> Result<u8, E> {
         Ok(self.get_thing(REG_GPINTEN)?)
