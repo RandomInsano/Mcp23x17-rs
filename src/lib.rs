@@ -27,6 +27,17 @@
 //! 
 //! Implementation details taken from
 //! http://ww1.microchip.com/downloads/en/DeviceDoc/20001952C.pdf
+//! 
+//! ## Notes:
+//! When wiring up the chip, you *must* pull reset high. Ideally pull
+//! SCL and SDA high with 1Kohm resistors
+//! 
+//! For some reason during testing, the only way to bring the chip
+//! out an unusual state after reset was to set the value of OLAT on Port A
+//! to 0xff. No other registers seemed to make a difference, inclusing OLAT
+//! on Port B. This state caused problems not just for Rust but `i2cset` as
+//! well.
+
 
 #![no_std]
 #![deny(missing_docs)]
